@@ -1,292 +1,285 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sanofi Hisse & Borç Yönetimi</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <style>
-        /* === SENİN CSS'İN AYNEN KORUNDU === */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            user-select: none; 
-        }
+<title>Sanofi App</title>
 
-        html, body { 
-            height: 100%; 
-            width: 100%; 
-            overflow: hidden;
-            background-color: #070a12; 
-        }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-        body { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 8px; 
-        }
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden; /* ❗ sayfa scroll yok */
+  background:#070a12;
+}
 
-        .app-container { 
-            width: 100%; 
-            max-width: 380px; 
-            height: 100%;
-            max-height: 96vh; 
-            background: linear-gradient(145deg, #0f1626 0%, #0b0f19 100%); 
-            border-radius: 20px; 
-            padding: 14px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
-            border: 1px solid rgba(255, 255, 255, 0.04); 
-            display: flex;
-            flex-direction: column; 
-        }
+/* 📱 FULLSCREEN APP CONTAINER */
+.app-container{
+  width:100%;
+  height:100vh; /* ❗ full ekran */
+  display:flex;
+  flex-direction:column;
+  padding:10px;
+  background:linear-gradient(145deg,#0f1626,#0b0f19);
+  color:#fff;
+}
 
-        .header { 
-            text-align: center; 
-            margin-bottom: 10px; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
-            padding-bottom: 6px;
-            flex-shrink: 0;
-        }
-        .header h1 { font-size: 1rem; color: #fff; font-weight: 700; }
-        .header p { font-size: 0.68rem; color: #38bdf8; margin-top: 2px; }
+/* HEADER */
+.header{
+  text-align:center;
+  padding:6px 0;
+  flex-shrink:0;
+}
+.header h1{font-size:16px}
+.header p{font-size:11px;color:#38bdf8}
 
-        .live-status {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.65rem;
-            color: #64748b;
-            margin-bottom: 8px;
-        }
+/* STATUS */
+.live-status{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  margin:4px 0;
+  flex-shrink:0;
+}
 
-        .live-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
+/* TAB */
+.nav-tabs{
+  display:flex;
+  background:#0f172a;
+  border-radius:10px;
+  padding:3px;
+  flex-shrink:0;
+}
+.tab-btn{
+  flex:1;
+  border:none;
+  background:transparent;
+  color:#64748b;
+  font-size:12px;
+  padding:6px;
+}
+.tab-btn.active{
+  background:#38bdf8;
+  color:#000;
+  border-radius:8px;
+}
 
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
-        }
+/* CONTENT AREA */
+.tab-content{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  overflow:hidden; /* ❗ sayfa scroll yok */
+}
+.tab-content.active{
+  display:flex;
+}
 
-        .nav-tabs {
-            display: flex;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 3px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
+/* CARDS */
+.summary-card{
+  background:rgba(255,255,255,0.04);
+  padding:8px;
+  border-radius:10px;
+  margin-top:6px;
+}
 
-        .tab-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #64748b;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 6px 0;
-            border-radius: 6px;
-        }
+.label{font-size:11px;color:#94a3b8}
+.value{font-size:18px;font-weight:bold}
 
-        .tab-btn.active {
-            background: rgba(56, 189, 248, 0.12);
-            color: #38bdf8;
-        }
+/* PROGRESS */
+.progress{
+  height:6px;
+  background:#1e293b;
+  border-radius:5px;
+  overflow:hidden;
+  margin-top:6px;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#10b981,#38bdf8);
+}
 
-        .tab-content { display: none; flex: 1; overflow: hidden; }
-        .tab-content.active { display: flex; flex-direction: column; }
+/* LIST (ONLY SCROLL AREA) */
+.list{
+  flex:1;
+  overflow-y:auto; /* ❗ sadece burası scroll */
+  margin-top:6px;
+}
 
-        .summary-card {
-            background: rgba(30, 41, 59, 0.3);
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 6px;
-        }
+/* FOOT INPUT */
+.bottom{
+  display:flex;
+  gap:6px;
+  padding-top:6px;
+  flex-shrink:0;
+}
 
-        .label { font-size: 0.65rem; color: #64748b; }
-        .value { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+input,select{
+  flex:1;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  background:#111827;
+  color:#fff;
+  font-size:12px;
+}
 
-        .color-total { color: #fff; }
-        .color-paid { color: #10b981; }
-        .color-remaining { color: #f59e0b; }
-        .color-asset { color: #38bdf8; }
+button{
+  background:#38bdf8;
+  border:none;
+  padding:0 12px;
+  border-radius:8px;
+  font-weight:bold;
+}
 
-        .progress-bar-bg { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; }
-        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #3b82f6); }
-
-        .month-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 6px;
-        }
-
-        .bottom-form {
-            display: flex;
-            gap: 6px;
-            margin-top: auto;
-        }
-
-        select, input {
-            background: #111827;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-        }
-
-        .action-btn {
-            background: #38bdf8;
-            border: none;
-            padding: 0 12px;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-    </style>
+/* 📱 SMALL SCREENS OPTIMIZATION */
+@media (max-height:700px){
+  .header h1{font-size:14px}
+  .value{font-size:16px}
+  .summary-card{padding:6px}
+}
+</style>
 </head>
 
 <body>
 
 <div class="app-container">
 
-    <div class="header">
-        <h1>Sanofi Hisse Hakları</h1>
-        <p>Bütçe & Gerçek Finans Akışı</p>
+  <div class="header">
+    <h1>Sanofi Panel</h1>
+    <p>Live Finance System</p>
+  </div>
+
+  <div class="live-status">
+    <span>API</span>
+    <span id="status">loading...</span>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="tab('b')">Borç</button>
+    <button class="tab-btn" onclick="tab('v')">Varlık</button>
+  </div>
+
+  <!-- BORC -->
+  <div id="b" class="tab-content active">
+
+    <div class="summary-card">
+      <div class="label">Toplam</div>
+      <div class="value">₺274.008</div>
     </div>
 
-    <div class="live-status">
-        <span>API Sync:</span>
-        <div style="display:flex;align-items:center;gap:5px;">
-            <div class="live-dot"></div>
-            <span id="ui-sync-text">Bekleniyor...</span>
-        </div>
+    <div class="summary-card">
+      <div class="label">Ödenen</div>
+      <div class="value" id="paid">₺0</div>
     </div>
 
-    <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('borc')">Borç</button>
-        <button class="tab-btn" onclick="switchTab('varlik')">Varlık</button>
+    <div class="summary-card">
+      <div class="label">Kalan</div>
+      <div class="value" id="remain">₺0</div>
     </div>
 
-    <!-- BORÇ -->
-    <div id="borc" class="tab-content active">
-
-        <div class="summary-card">
-            <div class="label">Toplam</div>
-            <div class="value color-total">₺274.008</div>
-        </div>
-
-        <div class="summary-card">
-            <div class="label">Ödenen</div>
-            <div class="value color-paid" id="odenen">₺0</div>
-        </div>
-
-        <div class="summary-card">
-            <div class="label">Kalan</div>
-            <div class="value color-remaining" id="kalan">₺0</div>
-        </div>
-
-        <div class="progress-bar-bg">
-            <div class="progress-bar-fill" id="progress"></div>
-        </div>
-
-        <div style="flex:1; overflow:auto; margin-top:8px;" id="list"></div>
-
+    <div class="progress">
+      <div class="progress-fill" id="bar"></div>
     </div>
 
-    <!-- VARLIK -->
-    <div id="varlik" class="tab-content">
+    <div class="list" id="list"></div>
 
-        <div class="summary-card">
-            <div class="label">Hisse Adedi</div>
-            <input id="adet" type="number" value="92.8004" oninput="calc()">
-        </div>
+  </div>
 
-        <div class="summary-card">
-            <div class="label">Hisse EUR</div>
-            <input id="hisse" type="number" oninput="calc()">
-        </div>
+  <!-- VARLIK -->
+  <div id="v" class="tab-content">
 
-        <div class="summary-card">
-            <div class="label">EUR/TRY</div>
-            <input id="kur" type="number" oninput="calc()">
-        </div>
-
-        <div class="summary-card">
-            <div class="label">TL Değer</div>
-            <div class="value color-asset" id="tl">₺0</div>
-        </div>
-
+    <div class="summary-card">
+      <div class="label">Hisse</div>
+      <input id="adet" value="92.8" oninput="calc()">
     </div>
+
+    <div class="summary-card">
+      <div class="label">EUR</div>
+      <input id="hisse" oninput="calc()">
+    </div>
+
+    <div class="summary-card">
+      <div class="label">Kur</div>
+      <input id="kur" oninput="calc()">
+    </div>
+
+    <div class="summary-card">
+      <div class="value" id="tl">₺0</div>
+    </div>
+
+  </div>
 
 </div>
 
 <script>
-const API = "/api/market";
 
-let dataSet = [
-    { ay: "TEMMUZ", tutar: 8383 },
-    { ay: "AĞUSTOS", tutar: 11707 }
+const API="/api/market";
+
+let data=[
+  {ay:"TEM",tutar:8000},
+  {ay:"AĞU",tutar:10000}
 ];
 
-function switchTab(t){
-    document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
-    document.getElementById(t).classList.add("active");
+function tab(x){
+  document.querySelectorAll(".tab-content").forEach(e=>e.classList.remove("active"));
+  document.getElementById(x).classList.add("active");
 }
 
 function render(){
-    const total = 274008;
-    const paid = dataSet.reduce((a,b)=>a+b.tutar,0);
-    const remain = total - paid;
+  let paid=data.reduce((a,b)=>a+b.tutar,0);
+  let total=274008;
 
-    document.getElementById("odenen").innerText = "₺"+paid;
-    document.getElementById("kalan").innerText = "₺"+remain;
+  document.getElementById("paid").innerText="₺"+paid;
+  document.getElementById("remain").innerText="₺"+(total-paid);
+  document.getElementById("bar").style.width=(paid/total*100)+"%";
 
-    document.getElementById("progress").style.width =
-        (paid/total*100)+"%";
-
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    dataSet.forEach(x=>{
-        const div = document.createElement("div");
-        div.className = "month-row";
-        div.innerHTML = `<span>${x.ay}</span><span>₺${x.tutar}</span>`;
-        list.appendChild(div);
-    });
+  let l=document.getElementById("list");
+  l.innerHTML="";
+  data.forEach(x=>{
+    let d=document.createElement("div");
+    d.innerHTML=x.ay+" - ₺"+x.tutar;
+    d.style.padding="6px";
+    d.style.borderBottom="1px solid #1e293b";
+    l.appendChild(d);
+  });
 }
 
 async function sync(){
-    try{
-        const res = await fetch(API);
-        const d = await res.json();
+  try{
+    let r=await fetch(API);
+    let d=await r.json();
 
-        if(d.sanofi) document.getElementById("hisse").value = d.sanofi;
-        if(d.eurtry) document.getElementById("kur").value = d.eurtry;
+    document.getElementById("hisse").value=d.sanofi||0;
+    document.getElementById("kur").value=d.eurtry||0;
 
-        document.getElementById("ui-sync-text").innerText="OK";
-        calc();
-    }catch(e){
-        document.getElementById("ui-sync-text").innerText="ERR";
-    }
+    document.getElementById("status").innerText="live";
+    calc();
+  }catch(e){
+    document.getElementById("status").innerText="err";
+  }
 }
 
 function calc(){
-    const adet = +document.getElementById("adet").value;
-    const hisse = +document.getElementById("hisse").value;
-    const kur = +document.getElementById("kur").value;
-
-    const tl = adet*hisse*kur;
-
-    document.getElementById("tl").innerText =
-        "₺"+tl.toFixed(0);
+  let a=+adet.value;
+  let h=+hisse.value;
+  let k=+kur.value;
+  tl.innerText="₺"+(a*h*k).toFixed(0);
 }
 
 render();
 sync();
 setInterval(sync,15000);
+
 </script>
 
 </body>
