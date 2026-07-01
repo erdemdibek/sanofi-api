@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sanofi Hisse & Borç Yönetimi</title>
+
+    <style>
+        /* === SENİN CSS'İN AYNEN KORUNDU === */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            user-select: none; 
+        }
+
+        html, body { 
+            height: 100%; 
+            width: 100%; 
+            overflow: hidden;
+            background-color: #070a12; 
+        }
+
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 8px; 
+        }
+
+        .app-container { 
+            width: 100%; 
+            max-width: 380px; 
+            height: 100%;
+            max-height: 96vh; 
+            background: linear-gradient(145deg, #0f1626 0%, #0b0f19 100%); 
+            border-radius: 20px; 
+            padding: 14px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.04); 
+            display: flex;
+            flex-direction: column; 
+        }
+
+        .header { 
+            text-align: center; 
+            margin-bottom: 10px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
+            padding-bottom: 6px;
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 1rem; color: #fff; font-weight: 700; }
+        .header p { font-size: 0.68rem; color: #38bdf8; margin-top: 2px; }
+
+        .live-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .live-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 0;
+            border-radius: 6px;
+        }
+
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+        }
+
+        .tab-content { display: none; flex: 1; overflow: hidden; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        .summary-card {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 6px;
+        }
+
+        .label { font-size: 0.65rem; color: #64748b; }
+        .value { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+
+        .color-total { color: #fff; }
+        .color-paid { color: #10b981; }
+        .color-remaining { color: #f59e0b; }
+        .color-asset { color: #38bdf8; }
+
+        .progress-bar-bg { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #3b82f6); }
+
+        .month-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+        }
+
+        .bottom-form {
+            display: flex;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        select, input {
+            background: #111827;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .action-btn {
+            background: #38bdf8;
+            border: none;
+            padding: 0 12px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div class="header">
+        <h1>Sanofi Hisse Hakları</h1>
+        <p>Bütçe & Gerçek Finans Akışı</p>
+    </div>
+
+    <div class="live-status">
+        <span>API Sync:</span>
+        <div style="display:flex;align-items:center;gap:5px;">
+            <div class="live-dot"></div>
+            <span id="ui-sync-text">Bekleniyor...</span>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('borc')">Borç</button>
+        <button class="tab-btn" onclick="switchTab('varlik')">Varlık</button>
+    </div>
+
+    <!-- BORÇ -->
+    <div id="borc" class="tab-content active">
+
+        <div class="summary-card">
+            <div class="label">Toplam</div>
+            <div class="value color-total">₺274.008</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">Ödenen</div>
+            <div class="value color-paid" id="odenen">₺0</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">Kalan</div>
+            <div class="value color-remaining" id="kalan">₺0</div>
+        </div>
+
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress"></div>
+        </div>
+
+        <div style="flex:1; overflow:auto; margin-top:8px;" id="list"></div>
+
+    </div>
+
+    <!-- VARLIK -->
+    <div id="varlik" class="tab-content">
+
+        <div class="summary-card">
+            <div class="label">Hisse Adedi</div>
+            <input id="adet" type="number" value="92.8004" oninput="calc()">
+        </div>
+
+        <div class="summary-card">
+            <div class="label">Hisse EUR</div>
+            <input id="hisse" type="number" oninput="calc()">
+        </div>
+
+        <div class="summary-card">
+            <div class="label">EUR/TRY</div>
+            <input id="kur" type="number" oninput="calc()">
+        </div>
+
+        <div class="summary-card">
+            <div class="label">TL Değer</div>
+            <div class="value color-asset" id="tl">₺0</div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const API = "/api/market";
+
+let dataSet = [
+    { ay: "TEMMUZ", tutar: 8383 },
+    { ay: "AĞUSTOS", tutar: 11707 }
+];
+
+function switchTab(t){
+    document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
+    document.getElementById(t).classList.add("active");
+}
+
+function render(){
+    const total = 274008;
+    const paid = dataSet.reduce((a,b)=>a+b.tutar,0);
+    const remain = total - paid;
+
+    document.getElementById("odenen").innerText = "₺"+paid;
+    document.getElementById("kalan").innerText = "₺"+remain;
+
+    document.getElementById("progress").style.width =
+        (paid/total*100)+"%";
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    dataSet.forEach(x=>{
+        const div = document.createElement("div");
+        div.className = "month-row";
+        div.innerHTML = `<span>${x.ay}</span><span>₺${x.tutar}</span>`;
+        list.appendChild(div);
+    });
+}
+
+async function sync(){
+    try{
+        const res = await fetch(API);
+        const d = await res.json();
+
+        if(d.sanofi) document.getElementById("hisse").value = d.sanofi;
+        if(d.eurtry) document.getElementById("kur").value = d.eurtry;
+
+        document.getElementById("ui-sync-text").innerText="OK";
+        calc();
+    }catch(e){
+        document.getElementById("ui-sync-text").innerText="ERR";
+    }
+}
+
+function calc(){
+    const adet = +document.getElementById("adet").value;
+    const hisse = +document.getElementById("hisse").value;
+    const kur = +document.getElementById("kur").value;
+
+    const tl = adet*hisse*kur;
+
+    document.getElementById("tl").innerText =
+        "₺"+tl.toFixed(0);
+}
+
+render();
+sync();
+setInterval(sync,15000);
+</script>
+
+</body>
+</html>
