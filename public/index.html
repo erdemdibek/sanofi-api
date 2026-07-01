@@ -209,10 +209,10 @@
     </div>
 
     <div class="live-status">
-        <span>Sistem Durumu:</span>
+        <span>Sunucu Durumu:</span>
         <div class="live-dot-wrapper">
             <div class="live-dot"></div>
-            <span id="ui-sync-text">loading...</span>
+            <span id="ui-sync-text">Eşitleniyor...</span>
         </div>
     </div>
 
@@ -277,18 +277,18 @@
         <div class="summary-card" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.15);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="label" style="color: #c084fc;">Hisse Adetiniz</div>
-                <input type="number" id="calc-hisse-adedi" step="0.0001" value="92.8" inputmode="decimal" oninput="v17_varlikHesapla()" style="width: 120px; background: #111827; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; color: #fff; padding: 4px 8px; font-family: monospace; text-align: right; font-weight: 700; outline: none;">
+                <input type="number" id="calc-hisse-adedi" step="0.0001" value="92.8004" inputmode="decimal" oninput="v17_varlikHesapla()" style="width: 120px; background: #111827; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; color: #fff; padding: 4px 8px; font-family: monospace; text-align: right; font-weight: 700; outline: none;">
             </div>
         </div>
 
         <div class="calc-inputs">
             <div class="input-row">
                 <label>Sanofi Real-Time Paris (EUR):</label>
-                <input type="number" id="calc-hisse-eur" step="0.01" value="0" oninput="v17_varlikHesapla()">
+                <input type="number" id="calc-hisse-eur" step="0.01" value="92.15" oninput="v17_varlikHesapla()">
             </div>
             <div class="input-row">
                 <label>Serbest Piyasa Euro / TL (₺):</label>
-                <input type="number" id="calc-euro-tl" step="0.01" value="0" oninput="v17_varlikHesapla()">
+                <input type="number" id="calc-euro-tl" step="0.01" value="53.13" oninput="v17_varlikHesapla()">
             </div>
         </div>
 
@@ -313,12 +313,21 @@
 </div>
 
 <script>
-    const API = "/api/market";
     const v17_sabitToplamBorc = 274008;
 
     let v17_kesintiVerileri = [
-        { ay: "TEM", tutar: 8000 },
-        { ay: "AĞU", tutar: 10000 }
+        { ay: "TEMMUZ", tutar: 8383 },
+        { ay: "AĞUSTOS", tutar: 11707 },
+        { ay: "EYLÜL", tutar: 11308 },
+        { ay: "EKİM", tutar: 6566 },
+        { ay: "KASIM", tutar: 8418 },
+        { ay: "ARALIK", tutar: 10168 },
+        { ay: "OCAK", tutar: 9090 },
+        { ay: "ŞUBAT", tutar: 9431 },
+        { ay: "MART", tutar: 16632 },
+        { ay: "NİSAN", tutar: 7854 },
+        { ay: "MAYIS", tutar: 8426 },
+        { ay: "HAZİRAN", tutar: 17603 }
     ];
 
     const v17_fmtTL = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -379,19 +388,38 @@
         v17_paneliGuncelle();
     }
 
-    // İLK KODDAKİ YEREL API VERİ ÇEKME SİSTEMİ
+    // SERVER.JS ENTEGRELİ YENİ VERİ AKIŞ MEKANİZMASI
     async function v17_kusursuzFinansMekanizmasi() {
         try {
-            let r = await fetch(API);
-            let d = await r.json();
+            // server.js üzerindeki tam endpoint yoluna istek atıyoruz
+            const response = await fetch('/api/market', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
-            document.getElementById('calc-hisse-eur').value = d.sanofi || 0;
-            document.getElementById('calc-euro-tl').value = d.eurtry || 0;
-
-            document.getElementById('ui-sync-text').innerText = "live";
-            v17_varlikHesapla();
+            if (response.ok) {
+                const data = await response.json();
+                
+                // server.js'den gelen 'success: true', 'sanofi' ve 'eurtry' verilerini kontrol ediyoruz
+                if (data && data.success && data.sanofi && data.eurtry) {
+                    
+                    // Input değerlerini server.js'den gelen temiz float değerlerle güncelliyoruz
+                    document.getElementById('calc-euro-tl').value = parseFloat(data.eurtry).toFixed(2);
+                    document.getElementById('calc-hisse-eur').value = parseFloat(data.sanofi).toFixed(2);
+                    
+                    document.getElementById('ui-sync-text').innerText = "Veriler Eşitlendi";
+                    v17_varlikHesapla(); // Yeni verilerle portföyü tekrar hesapla
+                } else {
+                    document.getElementById('ui-sync-text').innerText = "Veri Hatası";
+                }
+            } else {
+                document.getElementById('ui-sync-text').innerText = "Sunucu Hatası";
+            }
         } catch (e) {
-            document.getElementById('ui-sync-text').innerText = "err";
+            console.error("API bağlantı hatası:", e);
+            document.getElementById('ui-sync-text').innerText = "Yenileniyor...";
         }
     }
 
@@ -414,7 +442,7 @@
     v17_varlikHesapla();
     v17_kusursuzFinansMekanizmasi();
     
-    // Her 15 saniyede bir yerel veriyi sarsıntısız bir şekilde günceller
+    // server.js dosyan her 15 saniyede bir tetiklenir
     setInterval(v17_kusursuzFinansMekanizmasi, 15000);
 </script>
 
