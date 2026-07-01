@@ -8,7 +8,25 @@
   "theme_color": "#070a12",
   "orientation": "portrait",
   "icons": [
+    {{
+  "name": "Sanofi Hisse & Borç Yönetimi",
+  "short_name": "Sanofi Finans",
+  "description": "Anlık Sanofi Hisse ve Borç Takip Paneli",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "orientation": "portrait",
+  "icons": [
     {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' rx='110' fill='%23070a12'/><circle cx='256' cy='256' r='180' fill='none' stroke='%231e293b' stroke-width='12'/><path d='M160 360V280M224 360V220M288 360V160M352 360V250' stroke='%2338bdf8' stroke-width='28' stroke-linecap='round'/><path d='M140 220 L224 140 L308 190 L380 90' fill='none' stroke='%2310b981' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/><circle cx='380' cy='90' r='16' fill='%2310b981'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
       "src": "app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
