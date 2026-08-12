@@ -180,13 +180,14 @@
             padding-top: 8px; 
             border-top: 1px dashed rgba(255, 255, 255, 0.1); 
             display: flex; 
-            gap: 6px; 
+            gap: 4px; 
             flex-shrink: 0;
         }
-        .bottom-form input, .bottom-form select { background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; padding: 8px; font-size: 0.8rem; outline: none; }
-        .bottom-form select { flex: 1.2; }
+        .bottom-form input, .bottom-form select { background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; padding: 6px 4px; font-size: 0.75rem; outline: none; }
+        .bottom-form select#input-yil { flex: 0.9; }
+        .bottom-form select#input-ay { flex: 1.1; }
         .bottom-form input { flex: 1; font-family: monospace; text-align: right; }
-        .action-btn { background: #38bdf8; color: #070a12; border: none; padding: 0 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
+        .action-btn { background: #38bdf8; color: #070a12; border: none; padding: 0 10px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
 
         .calc-inputs {
             display: flex;
@@ -262,21 +263,27 @@
         </div>
 
         <div class="bottom-form">
+            <select id="input-yil">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+            </select>
             <select id="input-ay">
-                <option value="TEMMUZ">TEMMUZ</option>
-                <option value="AĞUSTOS">AĞUSTOS</option>
-                <option value="EYLÜL">EYLÜL</option>
-                <option value="EKİM">EKİM</option>
-                <option value="KASIM">KASIM</option>
-                <option value="ARALIK">ARALIK</option>
                 <option value="OCAK">OCAK</option>
                 <option value="ŞUBAT">ŞUBAT</option>
                 <option value="MART">MART</option>
                 <option value="NİSAN">NİSAN</option>
                 <option value="MAYIS">MAYIS</option>
                 <option value="HAZİRAN">HAZİRAN</option>
+                <option value="TEMMUZ">TEMMUZ</option>
+                <option value="AĞUSTOS">AĞUSTOS</option>
+                <option value="EYLÜL">EYLÜL</option>
+                <option value="EKİM">EKİM</option>
+                <option value="KASIM">KASIM</option>
+                <option value="ARALIK">ARALIK</option>
             </select>
-            <input type="number" id="input-tutar" placeholder="Tutar (TL)" inputmode="numeric">
+            <input type="number" id="input-tutar" placeholder="TL" inputmode="numeric">
             <button class="action-btn" onclick="v17_yeniAyEkle()">Ekle</button>
         </div>
     </div>
@@ -323,24 +330,43 @@
 <script>
     const v17_sabitToplamBorc = 274008;
 
-    // Varsayılan İlk Veriler
+    // Yıl bilgisi eklenmiş ilk varsayılan veriler (Temmuz 2024 başlangıcı)
     const v17_varsayilanVeriler = [
-        { ay: "TEMMUZ", tutar: 8383 },
-        { ay: "AĞUSTOS", tutar: 11707 },
-        { ay: "EYLÜL", tutar: 11308 },
-        { ay: "EKİM", tutar: 6566 },
-        { ay: "KASIM", tutar: 8418 },
-        { ay: "ARALIK", tutar: 10168 },
-        { ay: "OCAK", tutar: 9090 },
-        { ay: "ŞUBAT", tutar: 9431 },
-        { ay: "MART", tutar: 16632 },
-        { ay: "NİSAN", tutar: 7854 },
-        { ay: "MAYIS", tutar: 8426 },
-        { ay: "HAZİRAN", tutar: 17603 }
+        { yil: 2024, ay: "TEMMUZ", tutar: 8383 },
+        { yil: 2024, ay: "AĞUSTOS", tutar: 11707 },
+        { yil: 2024, ay: "EYLÜL", tutar: 11308 },
+        { yil: 2024, ay: "EKİM", tutar: 6566 },
+        { yil: 2024, ay: "KASIM", tutar: 8418 },
+        { yil: 2024, ay: "ARALIK", tutar: 10168 },
+        { yil: 2025, ay: "OCAK", tutar: 9090 },
+        { yil: 2025, ay: "ŞUBAT", tutar: 9431 },
+        { yil: 2025, ay: "MART", tutar: 16632 },
+        { yil: 2025, ay: "NİSAN", tutar: 7854 },
+        { yil: 2025, ay: "MAYIS", tutar: 8426 },
+        { yil: 2025, ay: "HAZİRAN", tutar: 17603 }
     ];
 
-    // LocalStorage okuma mantığı
-    let v17_kesintiVerileri = JSON.parse(localStorage.getItem('sanofi_kesinti_verileri')) || v17_varsayilanVeriler;
+    // LocalStorage okuma ve eski formattaki verileri otomatik güncelleme
+    let v17_rawStorage = localStorage.getItem('sanofi_kesinti_verileri');
+    let v17_kesintiVerileri = [];
+
+    if (v17_rawStorage) {
+        try {
+            v17_kesintiVerileri = JSON.parse(v17_rawStorage);
+            // Eski kayıtlarda 'yil' alanı yoksa varsayılan yılları ata
+            v17_kesintiVerileri = v17_kesintiVerileri.map(item => {
+                if (!item.yil) {
+                    const ilkDonem = ["TEMMUZ", "AĞUSTOS", "EYLÜL", "EKİM", "KASIM", "ARALIK"];
+                    item.yil = ilkDonem.includes(item.ay) ? 2024 : 2025;
+                }
+                return item;
+            });
+        } catch(e) {
+            v17_kesintiVerileri = v17_varsayilanVeriler;
+        }
+    } else {
+        v17_kesintiVerileri = v17_varsayilanVeriler;
+    }
 
     const v17_fmtTL = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
     const v17_fmtTLDesi = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -374,7 +400,7 @@
             const row = document.createElement('div');
             row.className = 'month-row';
             row.innerHTML = `
-                <span class="month-name">${item.ay}</span>
+                <span class="month-name">${item.ay} ${item.yil}</span>
                 <span class="month-val">
                     ${v17_fmtTL.format(item.tutar)}
                     <span class="delete-btn" onclick="v17_aySil(${index})" title="Sil">✕</span>
@@ -387,9 +413,11 @@
     }
 
     function v17_yeniAyEkle() {
+        const yilSelect = document.getElementById('input-yil');
         const aySelect = document.getElementById('input-ay');
         const tutarInput = document.getElementById('input-tutar');
 
+        const secilenYil = parseInt(yilSelect.value);
         const secilenAy = aySelect.value;
         const girilenTutar = parseFloat(tutarInput.value);
 
@@ -398,12 +426,13 @@
             return;
         }
 
-        // Ay listede zaten varsa güncelle, yoksa yeni ekle
-        const mevcutAyIndex = v17_kesintiVerileri.findIndex(item => item.ay === secilenAy);
-        if (mevcutAyIndex !== -1) {
-            v17_kesintiVerileri[mevcutAyIndex].tutar = girilenTutar;
+        // Hem YIL hem AY eşleşiyorsa güncelle, yoksa yeni yıl/ay kaydı ekle
+        const mevcutIndex = v17_kesintiVerileri.findIndex(item => item.ay === secilenAy && item.yil === secilenYil);
+        
+        if (mevcutIndex !== -1) {
+            v17_kesintiVerileri[mevcutIndex].tutar = girilenTutar;
         } else {
-            v17_kesintiVerileri.push({ ay: secilenAy, tutar: girilenTutar });
+            v17_kesintiVerileri.push({ yil: secilenYil, ay: secilenAy, tutar: girilenTutar });
         }
 
         // Cihaz hafızasına kaydet
@@ -414,7 +443,8 @@
     }
 
     function v17_aySil(index) {
-        if(confirm(`${v17_kesintiVerileri[index].ay} ayı kesintisini silmek istediğinize emin misiniz?`)) {
+        const kayit = v17_kesintiVerileri[index];
+        if(confirm(`${kayit.ay} ${kayit.yil} ayı kesintisini silmek istediğinize emin misiniz?`)) {
             v17_kesintiVerileri.splice(index, 1);
             localStorage.setItem('sanofi_kesinti_verileri', JSON.stringify(v17_kesintiVerileri));
             v17_paneliGuncelle();
