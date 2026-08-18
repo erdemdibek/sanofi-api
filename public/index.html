@@ -329,44 +329,7 @@
 
 <script>
     const v17_sabitToplamBorc = 274008;
-
-    // Yıl bilgisi eklenmiş ilk varsayılan veriler (Temmuz 2024 başlangıcı)
-    const v17_varsayilanVeriler = [
-        { yil: 2025, ay: "TEMMUZ", tutar: 8383 },
-        { yil: 2025, ay: "AĞUSTOS", tutar: 11707 },
-        { yil: 2025, ay: "EYLÜL", tutar: 11308 },
-        { yil: 2025, ay: "EKİM", tutar: 6566 },
-        { yil: 2025, ay: "KASIM", tutar: 8418 },
-        { yil: 2025, ay: "ARALIK", tutar: 10168 },
-        { yil: 2026, ay: "OCAK", tutar: 9090 },
-        { yil: 2026, ay: "ŞUBAT", tutar: 9431 },
-        { yil: 2026, ay: "MART", tutar: 16632 },
-        { yil: 2026, ay: "NİSAN", tutar: 7854 },
-        { yil: 2026, ay: "MAYIS", tutar: 8426 },
-        { yil: 2026, ay: "HAZİRAN", tutar: 17603 }
-    ];
-
-    // LocalStorage okuma ve eski formattaki verileri otomatik güncelleme
-    let v17_rawStorage = localStorage.getItem('sanofi_kesinti_verileri');
     let v17_kesintiVerileri = [];
-
-    if (v17_rawStorage) {
-        try {
-            v17_kesintiVerileri = JSON.parse(v17_rawStorage);
-            // Eski kayıtlarda 'yil' alanı yoksa varsayılan yılları ata
-            v17_kesintiVerileri = v17_kesintiVerileri.map(item => {
-                if (!item.yil) {
-                    const ilkDonem = ["TEMMUZ", "AĞUSTOS", "EYLÜL", "EKİM", "KASIM", "ARALIK"];
-                    item.yil = ilkDonem.includes(item.ay) ? 2024 : 2025;
-                }
-                return item;
-            });
-        } catch(e) {
-            v17_kesintiVerileri = v17_varsayilanVeriler;
-        }
-    } else {
-        v17_kesintiVerileri = v17_varsayilanVeriler;
-    }
 
     const v17_fmtTL = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
     const v17_fmtTLDesi = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -380,6 +343,46 @@
         document.getElementById('content-varlik').classList.toggle('active', tabName === 'varlik');
         
         if(tabName === 'varlik') v17_varlikHesapla();
+    }
+
+    // 1. GitHub'dan Verileri Çekme
+    async function v17_verileriYukle() {
+        try {
+            document.getElementById('ui-sync-text').innerText = "Veriler Çekiliyor...";
+            const response = await fetch('/api/kesintiler');
+            const result = await response.json();
+            if (result.success) {
+                v17_kesintiVerileri = result.data;
+                v17_paneliGuncelle();
+                document.getElementById('ui-sync-text').innerText = "GitHub Senkronize";
+            } else {
+                document.getElementById('ui-sync-text').innerText = "Veri Hatası";
+            }
+        } catch (e) {
+            console.error("Veri yükleme hatası:", e);
+            document.getElementById('ui-sync-text').innerText = "Bağlantı Hatası";
+        }
+    }
+
+    // 2. GitHub'a Kaydetme (Commit Atma)
+    async function v17_githubaKaydet() {
+        document.getElementById('ui-sync-text').innerText = "GitHub'a Yazılıyor...";
+        try {
+            const response = await fetch('/api/kesintiler', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(v17_kesintiVerileri)
+            });
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('ui-sync-text').innerText = "GitHub Senkronize";
+            } else {
+                document.getElementById('ui-sync-text').innerText = "Kayıt Başarısız";
+            }
+        } catch (e) {
+            console.error("Kayıt hatası:", e);
+            document.getElementById('ui-sync-text').innerText = "Kayıt Hatası";
+        }
     }
 
     function v17_paneliGuncelle() {
@@ -426,7 +429,6 @@
             return;
         }
 
-        // Hem YIL hem AY eşleşiyorsa güncelle, yoksa yeni yıl/ay kaydı ekle
         const mevcutIndex = v17_kesintiVerileri.findIndex(item => item.ay === secilenAy && item.yil === secilenYil);
         
         if (mevcutIndex !== -1) {
@@ -435,19 +437,17 @@
             v17_kesintiVerileri.push({ yil: secilenYil, ay: secilenAy, tutar: girilenTutar });
         }
 
-        // Cihaz hafızasına kaydet
-        localStorage.setItem('sanofi_kesinti_verileri', JSON.stringify(v17_kesintiVerileri));
-
         tutarInput.value = "";
         v17_paneliGuncelle();
+        v17_githubaKaydet(); // GitHub'a otomatik commit at
     }
 
     function v17_aySil(index) {
         const kayit = v17_kesintiVerileri[index];
         if(confirm(`${kayit.ay} ${kayit.yil} ayı kesintisini silmek istediğinize emin misiniz?`)) {
             v17_kesintiVerileri.splice(index, 1);
-            localStorage.setItem('sanofi_kesinti_verileri', JSON.stringify(v17_kesintiVerileri));
             v17_paneliGuncelle();
+            v17_githubaKaydet(); // GitHub'a otomatik commit at
         }
     }
 
@@ -464,18 +464,11 @@
                 if (data && data.success && data.sanofi && data.eurtry) {
                     document.getElementById('calc-euro-tl').value = parseFloat(data.eurtry).toFixed(2);
                     document.getElementById('calc-hisse-eur').value = parseFloat(data.sanofi).toFixed(2);
-                    
-                    document.getElementById('ui-sync-text').innerText = "Veriler Eşitlendi";
                     v17_varlikHesapla();
-                } else {
-                    document.getElementById('ui-sync-text').innerText = "Veri Hatası";
                 }
-            } else {
-                document.getElementById('ui-sync-text').innerText = "Sunucu Hatası";
             }
         } catch (e) {
-            console.error("API bağlantı hatası:", e);
-            document.getElementById('ui-sync-text').innerText = "Yenileniyor...";
+            console.error("Piyasa API bağlantı hatası:", e);
         }
     }
 
@@ -493,11 +486,13 @@
         document.getElementById('res-toplam-tl').innerText = v17_fmtTL.format(toplamTl);
     }
 
-    v17_paneliGuncelle();
+    // Uygulama Başlangıcı
+    v17_verileriYukle();
     v17_varlikHesapla();
     v17_kusursuzFinansMekanizmasi();
     setInterval(v17_kusursuzFinansMekanizmasi, 15000);
 </script>
+
 
 </body>
 </html>
